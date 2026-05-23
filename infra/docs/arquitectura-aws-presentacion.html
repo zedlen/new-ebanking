@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Arquitectura AWS — ebanking</title>
+  <style>
+    @page { size: A4 landscape; margin: 18mm; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; color: #1a1a1a; margin: 0; line-height: 1.45; }
+    .slide {
+      page-break-after: always;
+      min-height: 190mm;
+      padding: 8mm 4mm;
+    }
+    .slide:last-child { page-break-after: auto; }
+    h1 { font-size: 28px; margin: 0 0 8px; color: #0f3d6e; }
+    h2 { font-size: 22px; margin: 0 0 12px; color: #0f3d6e; border-bottom: 2px solid #e0e8f0; padding-bottom: 6px; }
+    h3 { font-size: 16px; margin: 12px 0 6px; }
+    p, li { font-size: 14px; }
+    ul { margin: 8px 0; padding-left: 22px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+    th, td { border: 1px solid #c5d0dc; padding: 8px 10px; text-align: left; }
+    th { background: #eef3f8; }
+    .meta { color: #555; font-size: 13px; }
+    .diagram {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      padding: 12px;
+      white-space: pre;
+      line-height: 1.35;
+      margin: 12px 0;
+    }
+    .footer { font-size: 11px; color: #666; margin-top: 16px; }
+    code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+    @media screen {
+      body { background: #e8ecf0; padding: 24px; }
+      .slide { background: #fff; max-width: 1100px; margin: 0 auto 24px; box-shadow: 0 2px 8px rgba(0,0,0,.12); border-radius: 6px; padding: 32px 40px; min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<section class="slide">
+  <h1>Arquitectura AWS</h1>
+  <h3>Infraestructura ebanking (Terraform)</h3>
+  <p class="meta">Región: <strong>us-west-2</strong> · Estado: S3 <code>ebanking-terraform-state</code></p>
+</section>
+
+<section class="slide">
+  <h2>¿Qué despliega este repo?</h2>
+  <ul>
+    <li>API en <strong>ECS Fargate</strong> detrás de un <strong>ALB</strong></li>
+    <li>Caché <strong>Redis</strong> (ElastiCache)</li>
+    <li>Imágenes en <strong>ECR</strong></li>
+    <li>Logs en <strong>CloudWatch</strong></li>
+    <li>Red <strong>VPC</strong> propia (pública + privada, 2 AZ)</li>
+  </ul>
+  <p><strong>7 módulos Terraform</strong> · Entorno por <strong>workspace</strong> (<code>prod</code> / <code>development</code>)</p>
+</section>
+
+<section class="slide">
+  <h2>Vista general</h2>
+  <pre class="diagram">Usuarios ──► Route53 ──► ALB ──► ECS Fargate ──┬──► Redis
+                                              ├──► Secrets Manager
+                                              ├──► ECR
+                                              └──► CloudWatch Logs</pre>
+</section>
+
+<section class="slide">
+  <h2>Flujo de una petición</h2>
+  <ol>
+    <li>DNS → registro <strong>A</strong> en Route53 (zona principal)</li>
+    <li><strong>ALB</strong> — TLS, redirect HTTP→HTTPS</li>
+    <li>Grupo de destino → tareas en puerto <strong>3000</strong></li>
+    <li>App → <strong>Redis</strong>, secretos, APIs externas</li>
+  </ol>
+  <p>Health check: <code>/api/health</code></p>
+</section>
+
+<section class="slide">
+  <h2>Módulos Terraform</h2>
+  <table>
+    <tr><th>Módulo</th><th>Función</th></tr>
+    <tr><td>networking</td><td>VPC, subredes, IGW, NAT, endpoints VPC</td></tr>
+    <tr><td>alb</td><td>Balanceador, HTTPS, Route53</td></tr>
+    <tr><td>ecs</td><td>Cluster, servicio Fargate, autoescalado</td></tr>
+    <tr><td>redis</td><td>ElastiCache</td></tr>
+    <tr><td>ecr</td><td>Repositorio de contenedores</td></tr>
+    <tr><td>iam</td><td>Roles ECS + Secrets Manager</td></tr>
+    <tr><td>logs</td><td>Grupo de logs</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <h2>VPC — subredes</h2>
+  <table>
+    <tr><th>Tipo</th><th>CIDR</th></tr>
+    <tr><td>Pública A</td><td>10.0.0.0/24</td></tr>
+    <tr><td>Pública B</td><td>10.0.1.0/24</td></tr>
+    <tr><td>Privada A</td><td>10.0.10.0/24</td></tr>
+    <tr><td>Privada B</td><td>10.0.11.0/24</td></tr>
+  </table>
+  <p><strong>VPC:</strong> 10.0.0.0/16</p>
+</section>
+
+<section class="slide">
+  <h2>¿Dónde corre cada cosa?</h2>
+  <table>
+    <tr><th>Componente</th><th>Subred</th></tr>
+    <tr><td>ALB</td><td>Públicas</td></tr>
+    <tr><td>Redis</td><td>Privadas</td></tr>
+    <tr><td>ECS (prod)</td><td>Privadas</td></tr>
+    <tr><td>ECS (dev)</td><td>Públicas + IP pública</td></tr>
+    <tr><td>NAT (prod)</td><td>Pública A</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <h2>Prod vs development</h2>
+  <table>
+    <tr><th></th><th>prod</th><th>development</th></tr>
+    <tr><td>NAT</td><td>Sí</td><td>No</td></tr>
+    <tr><td>VPC endpoints</td><td>Sí</td><td>No</td></tr>
+    <tr><td>ECS</td><td>Privado</td><td>Público</td></tr>
+    <tr><td>Escalado</td><td>1–4</td><td>1–2</td></tr>
+    <tr><td>Logs</td><td>120 días</td><td>30 días</td></tr>
+  </table>
+  <p>Workspace: <code>terraform workspace select prod</code></p>
+</section>
+
+<section class="slide">
+  <h2>Seguridad de red (resumen)</h2>
+  <ul>
+    <li><strong>ALB:</strong> 80/443 desde Internet</li>
+    <li><strong>ECS:</strong> solo puerto 3000 desde el SG del ALB</li>
+    <li><strong>Redis:</strong> 6379 solo desde la VPC</li>
+    <li><strong>Endpoints VPC (prod):</strong> 443 desde la VPC</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>Fuera de Terraform</h2>
+  <ul>
+    <li>Certificados <strong>ACM</strong> (wildcard)</li>
+    <li>Zona <strong>Route53</strong> (<code>primary_zone_id</code>)</li>
+    <li>Secretos en <strong>Secrets Manager</strong></li>
+    <li>Bucket S3 + DynamoDB del <strong>backend</strong></li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>Salidas importantes</h2>
+  <ul>
+    <li><code>https_url_primary</code> / <code>https_url_secondary</code></li>
+    <li><code>alb_dns</code></li>
+    <li><code>egress_ip</code> (IP fija de salida en prod)</li>
+    <li><code>ecr_repo_url</code>, <code>cluster_name</code>, <code>service_name</code></li>
+  </ul>
+  <p class="footer">Documentación completa: <code>docs/arquitectura-aws.md</code> · Código: <code>infra/modules/</code></p>
+</section>
+
+</body>
+</html>

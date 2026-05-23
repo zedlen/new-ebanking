@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "./zeuspay-theme.css";
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+@keyframes refetch-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+/* 1. Thin (35) - Ultra delgadita (Peso 100) */
+@font-face {
+  font-family: 'Helvetica Neue LT';
+  src: url('../fonts/font_HelveticaNeueLTW05-35Thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+}
+
+/* 2. Light (45) - Ligera y elegante (Peso 300) */
+@font-face {
+  font-family: 'Helvetica Neue LT';
+  src: url('../fonts/HelveticaNeueLTW0545Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* 3. Roman (55) - Texto normal (Peso 400) */
+@font-face {
+  font-family: 'Helvetica Neue LT';
+  src: url('../fonts/HelveticaNeueLTW0555Roman.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* 4. Bold (75) - Negrita para resaltar (Peso 700) */
+@font-face {
+  font-family: 'Helvetica Neue LT';
+  src: url('../fonts/font_HelveticaNeueLTW05-75Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* 5. Heavy (85) - Súper gruesa para títulos masivos (Peso 900) */
+@font-face {
+  font-family: 'Helvetica Neue LT';
+  src: url('../fonts/HelveticaNeueLTW0585Heavy.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}

@@ -1,0 +1,15 @@
+# Ignorar dependencias y carpetas de compilación
+node_modules/
+dist/
+build/
+
+# Ignorar variables de entorno y claves
+.env
+.env.local
+
+# Ignorar archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Ignorar registros
+*.log
