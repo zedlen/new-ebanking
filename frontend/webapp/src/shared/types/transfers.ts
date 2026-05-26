@@ -66,7 +66,7 @@ export const PENDING_STATUS = {
   ERROR: '3',
 } as const
 
-export interface BulkTransferPreviewRow {
+export interface BulkSpeiPreviewRow {
   line: number
   beneficiary_account: string
   concept: string

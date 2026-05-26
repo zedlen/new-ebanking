@@ -91,13 +91,17 @@ resource "aws_ecs_task_definition" "app" {
         {
           "name" : "FRONTEND_URL",
           "value" : var.env == "prod" ? "https://onboarding.livingrock.mx" : "https://onboarding-dev.livingrock.mx"
-        },
-        {
-          "name" : "REDIS_URI",
-          "value" : var.redis_uri
         }
       ],
       "secrets" : [
+        {
+          "name" : "REDIS_URI",
+          "valueFrom" : var.redis_uri_secret_arn
+        },
+        {
+          "name" : "PGDB_URI",
+          "valueFrom" : var.pgdb_uri_secret_arn
+        },
         {
           "name" : "USER_FOR_SYNC_LIVINGROCK",
         "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:USER_FOR_SYNC::" },

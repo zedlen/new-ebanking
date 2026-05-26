@@ -118,11 +118,6 @@ export class AuthService {
             headers,
           );
           key = keysResponse?.data || '';
-          await this.cacheManager.set(
-            `keys:${data.username}`,
-            JSON.stringify({ key, pbK: data.pbk }),
-            sessionLifeTime,
-          );
         } catch (e) {
           this.logger.error({ msg: 'Error while keys exchange', e });
         }

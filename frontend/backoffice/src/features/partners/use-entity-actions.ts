@@ -35,7 +35,7 @@ export function useEntityActions(context: ActionContext) {
     const actions: EntityCardAction[] = [
       {
         label: "Ver clientes",
-        onClick: () => navigate(partnerCustomersPath(partner.id)),
+        onClick: () => navigate(partnerCustomersPath(partner.external_id)),
       },
     ];
 
@@ -44,7 +44,7 @@ export function useEntityActions(context: ActionContext) {
         label: "Ver movimientos",
         onClick: () =>
           navigate(
-            movementsPath(partner.id, partner.accounts.data[0].id),
+            movementsPath(partner.id, partner.accounts.data[0].external_id),
           ),
       });
     }
@@ -52,7 +52,7 @@ export function useEntityActions(context: ActionContext) {
     if (partner.accounts?.total > 1) {
       actions.unshift({
         label: "Ver cuentas",
-        onClick: () => navigate(partnerAccountsPath(partner.id)),
+        onClick: () => navigate(partnerAccountsPath(partner.external_id)),
       });
     }
 
@@ -80,14 +80,14 @@ export function useEntityActions(context: ActionContext) {
       actions.push({
         label: "Ver cuentas",
         onClick: () =>
-          navigate(customerAccountsPath(partnerId, customer.id)),
+          navigate(customerAccountsPath(partnerId, customer.external_id)),
       });
     } else if (customer.accounts?.total === 1) {
       actions.push({
         label: "Ver movimientos",
         onClick: () =>
           navigate(
-            movementsPath(partnerId, customer.accounts.data[0].id, customer.id),
+            movementsPath(partnerId, customer.accounts.data[0].external_id, customer.external_id),
           ),
       });
     }
@@ -96,7 +96,7 @@ export function useEntityActions(context: ActionContext) {
       actions.push({
         label: "Ver wallets",
         onClick: () =>
-          navigate(customerWalletsPath(partnerId, customer.id)),
+          navigate(customerWalletsPath(partnerId, customer.external_id)),
       });
     }
 
@@ -104,7 +104,7 @@ export function useEntityActions(context: ActionContext) {
       {
         label: "Ver tarjetas",
         variant: "outline",
-        onClick: () => navigate(cardsPath(partnerId, customer.id)),
+        onClick: () => navigate(cardsPath(partnerId, customer.external_id)),
       },
       {
         label: "Configuración",
@@ -124,7 +124,7 @@ export function useEntityActions(context: ActionContext) {
       actions.push({
         label: "Ver cuentas",
         onClick: () =>
-          navigate(walletAccountsPath(partnerId, customerId, wallet.id)),
+          navigate(walletAccountsPath(partnerId, customerId, wallet.external_id)),
       });
     } else if (wallet.accounts?.total === 1) {
       actions.push({
@@ -133,9 +133,9 @@ export function useEntityActions(context: ActionContext) {
           navigate(
             movementsPath(
               partnerId,
-              wallet.accounts.data[0].id,
+              wallet.accounts.data[0].external_id,
               customerId,
-              wallet.id,
+              wallet.external_id,
             ),
           ),
       });
@@ -146,7 +146,7 @@ export function useEntityActions(context: ActionContext) {
         label: "Ver tarjetas",
         variant: "outline",
         onClick: () =>
-          navigate(cardsPath(partnerId, customerId, wallet.id)),
+          navigate(cardsPath(partnerId, customerId, wallet.external_id)),
       },
       {
         label: "Configuración",
@@ -167,7 +167,7 @@ export function useEntityActions(context: ActionContext) {
           navigate(
             movementsPath(
               partnerId,
-              account.id,
+              account.external_id,
               customerId,
               walletId,
             ),

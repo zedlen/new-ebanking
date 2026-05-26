@@ -17,6 +17,8 @@ import { HeadersInfo } from '@middleware/domain/repositories/headers.interface';
 
 import { hideClabe } from '@middleware/domain/utils/hideClabe';
 import { Account } from '@middleware/domain/entities/account.entity';
+import { PartnerService } from '../partners/partners.service';
+import { Partner } from '@middleware/domain/entities/partners.entity';
 
 @Injectable()
 export class CustomerService {
@@ -25,6 +27,7 @@ export class CustomerService {
     private readonly kubitRequest: KubitRequest,
     private readonly customerRepository: CustomerRepository,
     private readonly accountService: AccountService,
+    private readonly partnerService: PartnerService,
   ) {}
 
   private async lookupCustomers(
@@ -139,10 +142,13 @@ export class CustomerService {
     return this.customerRepository.findOne(filter);
   }
 
-  async findCustomers(filter: {
-    [key: string]: string | number | boolean;
-  }): Promise<PaginatedResult<Customer>> {
-    return this.customerRepository.find(filter);
+  async findCustomers(
+    filter: {
+      [key: string]: string | number | boolean | null;
+    },
+    pagination: Pagination,
+  ): Promise<PaginatedResult<Customer>> {
+    return this.customerRepository.find(filter, pagination);
   }
 
   async createCustomer(
@@ -193,5 +199,47 @@ export class CustomerService {
   }
   searchByQueryWallets(query: string) {
     return this.customerRepository.searchByQueryWallets(query);
+  }
+
+  async fetchUserAffiliations(
+    info: HeadersInfo,
+    customerId: string,
+    pagination: Pagination,
+    headers: Record<string, string>,
+    query?: string,
+  ) {
+    let customer: Partner | Customer | null;
+    customer = await this.fetchCustomer(info, customerId, headers);
+    if (!customer)
+      customer = await this.partnerService.fetchPartner(
+        info,
+        customerId,
+        headers,
+      );
+    if (!customer) return { total: 0, data: [] };
+    let filters = {};
+    if ('economic_activity' in customer) {
+      filters = {
+        account_customer_id: customer.external_id,
+        taxpayer_type_id: 1,
+      };
+    } else {
+      filters = { parent_id: customer.external_id };
+    }
+    return this.customerRepository.getCustomerAffiliations(
+      filters,
+      pagination,
+      query,
+    );
+  }
+
+  findCustomerByAffiliationCode(
+    affiliationCode: string,
+    { appName }: HeadersInfo,
+  ) {
+    return this.customerRepository.findByAffiliationCode(
+      affiliationCode,
+      appName,
+    );
   }
 }

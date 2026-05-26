@@ -9,7 +9,7 @@ export interface Partner extends Entity {
   economic_activity: string;
   business_activity: string;
   taxpayer_type_id: number;
-  company_address_id: number;
+  company_address_id?: number;
   company_address: Address;
   address: Address;
   contact_name: string;
@@ -27,7 +27,7 @@ export interface Partner extends Entity {
   role_id?: number;
   otp?: string;
   affiliation_code?: string;
-  review_date: string;
-  process_date: string;
+  review_date?: string;
+  process_date?: string;
   app: string;
 }

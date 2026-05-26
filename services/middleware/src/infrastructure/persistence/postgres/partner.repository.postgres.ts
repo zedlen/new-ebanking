@@ -43,12 +43,20 @@ export class PartnerPostgresRepository extends PartnerRepository {
   }
   async find(
     params: {
-      [key: string]: string | number | boolean;
+      [key: string]: string | number | boolean | string[];
     },
     pagination: Pagination,
   ): Promise<{ total: number; data: Partner[] }> {
+    const paramsWhere = {};
+    for (const key in params) {
+      if (Array.isArray(params[key])) {
+        paramsWhere[key] = In(params[key]);
+      } else {
+        paramsWhere[key] = params[key];
+      }
+    }
     const [data, total] = await this.partnerModel.findAndCount({
-      where: params,
+      where: paramsWhere,
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -115,5 +123,19 @@ export class PartnerPostgresRepository extends PartnerRepository {
       .getMany();
 
     return partners.map((partner) => this.mapToEntity(partner));
+  }
+
+  findByAffiliationCode(
+    affiliationCode: string,
+    app: string,
+  ): Promise<Partner | null> {
+    return this.partnerModel
+      .createQueryBuilder('partner')
+      .where(
+        'partner.affiliation_code = :affiliationCode OR partner.external_id = :affiliationCode',
+        { affiliationCode },
+      )
+      .andWhere('partner.app = :app', { app })
+      .getOne();
   }
 }

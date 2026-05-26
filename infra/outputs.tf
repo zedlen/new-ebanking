@@ -25,3 +25,29 @@ output "cluster_name" {
 output "service_name" {
   value = module.ecs.service_name
 }
+
+output "postgres_address" {
+  value = module.postgres.address
+}
+
+output "postgres_port" {
+  value = module.postgres.port
+}
+
+output "postgres_db_name" {
+  value = module.postgres.db_name
+}
+
+output "postgres_username" {
+  value = module.postgres.username
+}
+
+output "postgres_password" {
+  value     = module.postgres.password
+  sensitive = true
+}
+
+output "postgres_uri" {
+  value     = module.postgres.uri
+  sensitive = true
+}

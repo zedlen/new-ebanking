@@ -55,6 +55,37 @@ module "redis" {
   private_subnet_ids = module.networking.private_subnet_ids
 }
 
+module "postgres" {
+  source = "./modules/postgres"
+
+  project = var.project
+  env     = local.env
+
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_subnet_ids
+
+  # Only allow Postgres inbound from ECS tasks
+  allowed_security_group_id = module.ecs.service_security_group_id
+}
+
+resource "aws_secretsmanager_secret" "redis_uri" {
+  name = "${module.iam.secrets_prefix}/REDIS_URI"
+}
+
+resource "aws_secretsmanager_secret_version" "redis_uri" {
+  secret_id     = aws_secretsmanager_secret.redis_uri.id
+  secret_string = module.redis.redis_uri
+}
+
+resource "aws_secretsmanager_secret" "pgdb_uri" {
+  name = "${module.iam.secrets_prefix}/PGDB_URI"
+}
+
+resource "aws_secretsmanager_secret_version" "pgdb_uri" {
+  secret_id     = aws_secretsmanager_secret.pgdb_uri.id
+  secret_string = module.postgres.uri
+}
+
 module "ecs" {
   source     = "./modules/ecs"
   project    = var.project
@@ -85,5 +116,11 @@ module "ecs" {
   asg_max_capacity = local.asg_max
 
   use_public_subnets = local.use_public_subnets_for_tasks
-  redis_uri          = module.redis.redis_uri
+
+  redis_uri_secret_arn = aws_secretsmanager_secret.redis_uri.arn
+  pgdb_uri_secret_arn  = aws_secretsmanager_secret.pgdb_uri.arn
+
+  # Deprecated direct env wiring (kept for backwards compat in module vars)
+  redis_uri = module.redis.redis_uri
+  pgdb_uri  = module.postgres.uri
 }

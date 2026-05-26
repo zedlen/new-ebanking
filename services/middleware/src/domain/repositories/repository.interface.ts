@@ -6,7 +6,7 @@ import {
 export abstract class Repository<T> {
   abstract find(
     params: {
-      [key: string]: string | number | boolean;
+      [key: string]: string | number | boolean | string[] | null;
     },
     pagination?: Pagination,
   ): Promise<PaginatedResult<T>>;

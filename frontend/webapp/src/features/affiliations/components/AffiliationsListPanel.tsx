@@ -52,7 +52,7 @@ export function AffiliationsListPanel() {
     message?: string
   } | null>(null)
 
-  const { data, isLoading, isFetching, refetch } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['affiliations', offset, PAGE_SIZE, search],
     queryFn: () => affiliationsService.list(offset, PAGE_SIZE, search),
   })
@@ -139,9 +139,8 @@ export function AffiliationsListPanel() {
   const sync = async () => {
     setSyncing(true)
     await affiliationsService.sync()
-    await refetch()
     setSyncing(false)
-    setAlert({ type: 'success', title: 'Afiliaciones sincronizadas' })
+    setAlert({ type: 'success', title: 'Sincronizacion de afiliaciones iniciada, actualiza la pagina en unos minutos para ver los cambios.' })
   }
 
   const goToTransfer = async (row: AffiliationRow) => {

@@ -1,4 +1,9 @@
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import {
+  InjectQueue,
+  OnWorkerEvent,
+  Processor,
+  WorkerHost,
+} from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { PartnerService } from '@middleware/application/services/partners/partners.service';
@@ -59,8 +64,10 @@ export class SyncPartnersQueue extends WorkerHost {
         );
         accounts = data;
       } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Error syncing accounts for partner ${partner.id}: ${error.message}`,
+          `Error syncing accounts for partner ${partner.id}: ${errorMessage}`,
         );
       }
       try {
@@ -70,8 +77,10 @@ export class SyncPartnersQueue extends WorkerHost {
           headers,
         );
       } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Error syncing account favorites for partner ${partner.id}: ${error.message}`,
+          `Error syncing account favorites for partner ${partner.id}: ${errorMessage}`,
         );
       }
 
@@ -97,11 +106,19 @@ export class SyncPartnersQueue extends WorkerHost {
           headers,
         );
       } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Error syncing movements for account ${account.id}: ${error.message}`,
+          `Error syncing movements for account ${account.id}: ${errorMessage}`,
         );
       }
     }
     this.logger.log(`Completed sync-partners job for app ${appName}`);
+  }
+
+  @OnWorkerEvent('failed')
+  onJobFailed(job: Job, error: Error) {
+    console.error(`Job ${job.id} failed with error: ${error.message}`);
+    // Perform external logging (e.g., Sentry) or notifications
   }
 }

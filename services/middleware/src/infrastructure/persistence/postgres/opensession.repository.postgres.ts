@@ -47,7 +47,6 @@ export class OpenSessionPostgresRepository extends OpensessionRepository {
 
   async save(item: OpenSession): Promise<OpenSession> {
     const session = await this.openSessionModel.save(item);
-    console.log(session);
     return session;
   }
 

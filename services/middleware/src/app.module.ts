@@ -16,6 +16,8 @@ import { ApplicationModule } from './application/application.module';
 import { BackofficeModule } from './modules/backoffice/backoffice.module';
 import { EbankingModule } from './modules/ebanking/ebanking.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { ExpressAdapter } from '@bull-board/express';
 
 @Module({
   imports: [
@@ -35,6 +37,10 @@ import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module
           url: config.get<string>('REDIS_URI') ?? 'redis://127.0.0.1:6379',
         },
       }),
+    }),
+    BullBoardModule.forRoot({
+      route: '/queues',
+      adapter: ExpressAdapter,
     }),
     LoggingModule,
     DatabaseModule.register(),

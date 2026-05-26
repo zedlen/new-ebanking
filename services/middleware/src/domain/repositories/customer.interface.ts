@@ -24,4 +24,8 @@ export abstract class CustomerRepository extends Repository<Customer> {
   ): Promise<
     PaginatedResult<Customer & { accounts: Array<Account & { cards: Card[] }> }>
   >;
+  abstract findByAffiliationCode(
+    affiliationCode: string,
+    app: string,
+  ): Promise<Customer | null>;
 }

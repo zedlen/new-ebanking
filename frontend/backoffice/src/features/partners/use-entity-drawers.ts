@@ -36,10 +36,10 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
   ) => {
     const ctx = { ...context };
     if (layout === EntityLayout.Customers && "contact_name" in entity) {
-      ctx.customerId = entity.id;
+      ctx.customerId = entity.external_id;
     }
     if (layout === EntityLayout.Wallets && "contact_name" in entity) {
-      ctx.walletId = entity.id;
+      ctx.walletId = entity.external_id;
     }
     openDrawer({ type, layout, entity, context: ctx, onRefresh: refresh });
   };
@@ -48,7 +48,7 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
     const actions: EntityCardAction[] = [
       {
         label: "Ver clientes",
-        onClick: () => navigate(partnerCustomersPath(partner.id)),
+        onClick: () => navigate(partnerCustomersPath(partner.external_id)),
       },
     ];
 
@@ -56,13 +56,13 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
       actions.unshift({
         label: "Ver movimientos",
         onClick: () =>
-          navigate(movementsPath(partner.id, partner.accounts.data[0].id)),
+          navigate(movementsPath(partner.external_id, partner.accounts.data[0].external_id)),
       });
     }
     if (partner.accounts?.total > 1) {
       actions.unshift({
         label: "Ver cuentas",
-        onClick: () => navigate(partnerAccountsPath(partner.id)),
+        onClick: () => navigate(partnerAccountsPath(partner.external_id)),
       });
     }
 
@@ -81,14 +81,14 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
     if (customer.accounts?.total > 1) {
       actions.push({
         label: "Ver cuentas",
-        onClick: () => navigate(customerAccountsPath(partnerId, customer.id)),
+        onClick: () => navigate(customerAccountsPath(partnerId, customer.external_id)),
       });
     } else if (customer.accounts?.total === 1) {
       actions.push({
         label: "Ver movimientos",
         onClick: () =>
           navigate(
-            movementsPath(partnerId, customer.accounts.data[0].id, customer.id),
+            movementsPath(partnerId, customer.accounts.data[0].external_id, customer.external_id),
           ),
       });
     }
@@ -96,7 +96,7 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
     if (customer.taxpayer_type_id === TypePerson.Moral) {
       actions.push({
         label: "Ver wallets",
-        onClick: () => navigate(customerWalletsPath(partnerId, customer.id)),
+        onClick: () => navigate(customerWalletsPath(partnerId, customer.external_id)),
       });
     }
 
@@ -120,7 +120,7 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
       actions.push({
         label: "Ver cuentas",
         onClick: () =>
-          navigate(walletAccountsPath(partnerId, customerId, wallet.id)),
+          navigate(walletAccountsPath(partnerId, customerId, wallet.external_id)),
       });
     } else if (wallet.accounts?.total === 1) {
       actions.push({
@@ -129,9 +129,9 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
           navigate(
             movementsPath(
               partnerId,
-              wallet.accounts.data[0].id,
+              wallet.accounts.data[0].external_id,
               customerId,
-              wallet.id,
+              wallet.external_id,
             ),
           ),
       });
@@ -153,7 +153,7 @@ export function useEntityDrawers(context: HierarchyIds, layout: EntityLayout) {
           navigate(
             movementsPath(
               context.partnerId!,
-              account.id,
+              account.external_id,
               context.customerId,
               context.walletId,
             ),

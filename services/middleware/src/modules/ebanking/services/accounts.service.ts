@@ -1,5 +1,4 @@
 import { AccountService } from '@middleware/application/services/accounts/accounts.service';
-import { CustomerService } from '@middleware/application/services/customers/customers.service';
 import { Pagination } from '@middleware/domain/interfaces/pagination.interface';
 import { HeadersInfo } from '@middleware/domain/repositories/headers.interface';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -9,7 +8,6 @@ import { ValidateCustomer } from './validateCustomer.service';
 export class AccountsService {
   constructor(
     private readonly accountService: AccountService,
-    private readonly customerService: CustomerService,
     private readonly validate: ValidateCustomer,
   ) {}
 

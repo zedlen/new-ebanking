@@ -30,6 +30,9 @@ import { ValidateInformation } from '@middleware/domain/utils/validateInformatio
 import { CryptoService } from '@middleware/core/auth/services/crypto.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { AffiliationRequestService } from './services/affiliationRequests/affiliationRequests.service';
 
 @Module({
   imports: [
@@ -59,12 +62,26 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         };
       },
     }),
-    BullModule.registerQueue(
-      { name: 'sync-partners' },
-      { name: 'sync-customers' },
-      { name: 'sync-accounts' },
-      { name: 'process-bulk-create-customer' },
-    ),
+    BullModule.registerQueue({ name: 'sync-partners' }),
+    BullModule.registerQueue({ name: 'sync-customers' }),
+    BullModule.registerQueue({ name: 'sync-accounts' }),
+    BullModule.registerQueue({ name: 'process-bulk-create-customer' }),
+    BullBoardModule.forFeature({
+      name: 'sync-partners',
+      adapter: BullMQAdapter,
+    }),
+    BullBoardModule.forFeature({
+      name: 'sync-customers',
+      adapter: BullMQAdapter,
+    }),
+    BullBoardModule.forFeature({
+      name: 'sync-accounts',
+      adapter: BullMQAdapter,
+    }),
+    BullBoardModule.forFeature({
+      name: 'process-bulk-create-customer',
+      adapter: BullMQAdapter,
+    }),
   ],
   providers: [
     KubitRequest,
@@ -92,6 +109,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     AppsService,
     ConfigFieldService,
     FilesService,
+    AffiliationRequestService,
   ],
   exports: [
     BrowserDetection,
@@ -120,6 +138,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     FilesService,
     JwtModule,
     BullModule,
+    AffiliationRequestService,
   ],
 })
 export class ApplicationModule {}

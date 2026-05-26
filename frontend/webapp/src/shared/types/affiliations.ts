@@ -42,7 +42,7 @@ export interface Affiliation {
   creation_date?: string
   address?: AffiliationAddress
   account?: AccountInfo
-  accounts?: Array<AccountInfo & { cards?: AffiliationCard[] }>
+  accounts?: AccountInfo & { cards?: AffiliationCard[] }
   cards?: AffiliationCard[]
   field_name?: string
 }

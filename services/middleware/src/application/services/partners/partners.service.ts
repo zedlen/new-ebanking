@@ -125,10 +125,13 @@ export class PartnerService {
     return this.partnerRepository.findOne(filter);
   }
 
-  async findPartners(filter: {
-    [key: string]: string | number | boolean;
-  }): Promise<PaginatedResult<Partner>> {
-    return this.partnerRepository.find(filter);
+  async findPartners(
+    filter: {
+      [key: string]: string | number | boolean | string[];
+    },
+    pagination: Pagination,
+  ): Promise<PaginatedResult<Partner>> {
+    return this.partnerRepository.find(filter, pagination);
   }
 
   async createPartner(
@@ -194,5 +197,15 @@ export class PartnerService {
 
   searchByQuery(query: string) {
     return this.partnerRepository.searchByQuery(query);
+  }
+
+  findCustomerByAffiliationCode(
+    affiliationCode: string,
+    { appName }: HeadersInfo,
+  ) {
+    return this.partnerRepository.findByAffiliationCode(
+      affiliationCode,
+      appName,
+    );
   }
 }

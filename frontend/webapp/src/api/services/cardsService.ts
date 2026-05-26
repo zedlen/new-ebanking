@@ -90,6 +90,18 @@ export const cardsService = {
     }
   },
 
+  async linkCard(body: LinkCardRequest): Promise<boolean> {
+    try {
+      const { data } = await apiClient.post<{ code?: number }>(
+        `${URL_API.CARDS}/virtual`,
+        body,
+      )
+      return data.code === 200
+    } catch {
+      return false
+    }
+  },
+
   async changeStatus(cardId: string, body: CardChangeStatus): Promise<boolean> {
     try {
       const { data } = await apiClient.patch<{ code?: number }>(

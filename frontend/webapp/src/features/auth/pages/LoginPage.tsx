@@ -86,8 +86,7 @@ export function LoginPage() {
       }
 
       const token = result.data?.token ?? ''
-      const userProfile = await authService.getCurrentUser(token || undefined)
-      console.log('User profile:', userProfile)
+      const userProfile = await authService.getCurrentUser(token || undefined)      
       if (!userProfile) {
         setErrorCode(502)
         return

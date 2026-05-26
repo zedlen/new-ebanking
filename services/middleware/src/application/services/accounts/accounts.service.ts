@@ -27,6 +27,7 @@ export class AccountService {
       external_id: account.id,
       app: headers['APP_NAME'],
     });
+
     const { id, ...accountData } = account;
     if (!dbAccount) {
       return this.accountRepository.save({
@@ -37,6 +38,7 @@ export class AccountService {
     }
     await this.accountRepository.update(dbAccount.id as string, {
       ...accountData,
+      external_id: id,
     });
     return this.accountRepository.get(dbAccount.id as string);
   }

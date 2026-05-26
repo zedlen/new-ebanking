@@ -11,4 +11,8 @@ export abstract class PartnerRepository extends Repository<Partner> {
     pagination?: Pagination,
   ): Promise<PaginatedResult<Partner>>;
   abstract searchByQuery(query: string): Promise<Partner[]>;
+  abstract findByAffiliationCode(
+    affiliationCode: string,
+    app: string,
+  ): Promise<Partner | null>;
 }

@@ -7,7 +7,6 @@ import { Badge } from '@/shared/components/Badge'
 import { Button } from '@/shared/components/Button'
 import { DataTable, type DataTableColumn } from '@/shared/components/DataTable'
 import { Modal } from '@/shared/components/Modal'
-import { useSessionStore } from '@/shared/store/sessionStore'
 import type { AffiliationRequest } from '@/shared/types/affiliations'
 import { formatAffiliationAddress } from '@/shared/utils/affiliations'
 
@@ -20,8 +19,7 @@ function requestStatusBadge(status: string): {
   return { label: 'Pendiente', tone: 'warning' }
 }
 
-export function AffiliationRequestsPanel() {
-  const customerId = useSessionStore((s) => s.profile?.customer_id ?? '')
+export function AffiliationRequestsPanel() {  
   const [editing, setEditing] = useState<AffiliationRequest | null>(null)
   const [saving, setSaving] = useState(false)
   const [alert, setAlert] = useState<{
@@ -31,13 +29,13 @@ export function AffiliationRequestsPanel() {
   } | null>(null)
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['affiliation-requests', customerId],
-    queryFn: () => affiliationsService.getRequests(customerId),
-    enabled: Boolean(customerId),
+    queryKey: ['affiliation-requests'],
+    queryFn: () => affiliationsService.getRequests(),
+
   })
 
   const approve = async (row: AffiliationRequest) => {
-    const result = await affiliationsService.approveRequest(customerId, row.id)
+    const result = await affiliationsService.approveRequest( row.id)
     if (!result.id) {
       setAlert({
         type: 'error',
@@ -51,7 +49,7 @@ export function AffiliationRequestsPanel() {
   }
 
   const reject = async (row: AffiliationRequest) => {
-    const ok = await affiliationsService.rejectRequest(customerId, row.id)
+    const ok = await affiliationsService.rejectRequest( row.id)
     if (!ok) {
       setAlert({ type: 'error', title: 'No se pudo rechazar la solicitud' })
       return
@@ -62,7 +60,7 @@ export function AffiliationRequestsPanel() {
 
   const saveEdit = async (request: AffiliationRequest) => {
     setSaving(true)
-    const result = await affiliationsService.updateRequest(customerId, request.id, {
+    const result = await affiliationsService.updateRequest( request.id, {
       name: request.name,
       ap_paterno: request.ap_paterno,
       ap_materno: request.ap_materno,

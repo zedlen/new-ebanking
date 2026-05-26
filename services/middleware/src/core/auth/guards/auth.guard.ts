@@ -18,6 +18,8 @@ import {
 } from '../interfaces/session-cache.interface';
 import { CryptoService } from '../services/crypto.service';
 import { isAppModule, resolveModuleFromUrl } from '../constants/app-modules';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -29,9 +31,18 @@ export class AuthGuard implements CanActivate {
     private readonly configService: ConfigService,
     private readonly cryptoService: CryptoService,
     private readonly appCredentialRepository: AppCredentialsRepository,
+    private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const cookies: Record<string, string> = request.cookies as Record<
@@ -64,9 +75,7 @@ export class AuthGuard implements CanActivate {
         },
       );
 
-      const cached = (await this.cacheManager.get(payload.tk)) as
-        | string
-        | undefined;
+      const cached = (await this.cacheManager.get(payload.tk)) as string;
       if (!cached) {
         throw new UnauthorizedException('Session expired');
       }
@@ -110,17 +119,6 @@ export class AuthGuard implements CanActivate {
       });
 
       await this.cacheManager.set(payload.tk, cached, sessionLifeTime);
-
-      const keys = (await this.cacheManager.get(`keys:${userTokenData.i}`)) as
-        | string
-        | undefined;
-      if (keys) {
-        await this.cacheManager.set(
-          `keys:${userTokenData.i}`,
-          keys,
-          sessionLifeTime,
-        );
-      }
 
       request.headers['APP_NAME'] = payload.apn;
       request.headers['APP_ENV'] = payload.evn;

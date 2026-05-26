@@ -20,6 +20,7 @@ export const AffiliationRequestSchema = z
       .regex(/[A-Z0-9]{3,15}$/)
       .optional(),
     isEnterprise: z.boolean(),
+    app: z.string(),
   })
   .strict();
 

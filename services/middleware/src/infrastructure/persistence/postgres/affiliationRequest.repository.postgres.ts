@@ -29,11 +29,11 @@ export class AffiliationRequestPostgresRepository extends AffiliationRequestRepo
     return { total, data: data as AffiliationRequest[] };
   }
 
-  async findOne(params: {
-    [key: string]: string | number | boolean;
-  }): Promise<AffiliationRequest> {
+  async findOne(
+    query: Partial<AffiliationRequest>,
+  ): Promise<AffiliationRequest> {
     return (await this.affiliationRequestModel.findOne({
-      where: params,
+      where: query,
     })) as AffiliationRequest;
   }
 
@@ -64,6 +64,8 @@ export class AffiliationRequestPostgresRepository extends AffiliationRequestRepo
       contact_email: affiliationRequest.contact_email,
       contact_tel: affiliationRequest.contact_tel,
       status: affiliationRequest.status,
+      app: affiliationRequest.app,
+      active: affiliationRequest.active,
     };
   }
 
@@ -87,14 +89,10 @@ export class AffiliationRequestPostgresRepository extends AffiliationRequestRepo
     return true;
   }
 
-  async softDelete(item: Partial<AffiliationRequest>): Promise<boolean> {
-    if (!item.id) {
-      return false;
-    }
-
+  async softDelete(id: string): Promise<boolean> {
     const affiliationRequest = await this.affiliationRequestModel.preload({
-      id: item.id,
-      status: 'rejected',
+      id,
+      active: false,
     });
 
     if (!affiliationRequest) {

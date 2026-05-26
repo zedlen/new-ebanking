@@ -1,4 +1,9 @@
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import {
+  InjectQueue,
+  OnWorkerEvent,
+  Processor,
+  WorkerHost,
+} from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { CustomerService } from '@middleware/application/services/customers/customers.service';
@@ -91,5 +96,11 @@ export class SyncCustomersQueue extends WorkerHost {
     this.logger.log(
       `Completed sync-customers job for parentId ${parentId} in app ${appName}`,
     );
+  }
+
+  @OnWorkerEvent('failed')
+  onJobFailed(job: Job, error: Error) {
+    console.error(`Job ${job.id} failed with error: ${error.message}`);
+    // Perform external logging (e.g., Sentry) or notifications
   }
 }

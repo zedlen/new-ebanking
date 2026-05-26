@@ -158,8 +158,8 @@ export function MovementsPage() {
                     <MovementRow
                       key={mov.id}
                       mov={mov}
-                      onDetail={() => setDetailId(mov.id)}
-                      onVoucher={() => downloadMovementVoucher(ctx, mov.id)}
+                      onDetail={() => setDetailId(mov.external_id)}
+                      onVoucher={() => downloadMovementVoucher(ctx, mov.external_id)}
                     />
                   ))}
                 </TableBody>

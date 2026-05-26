@@ -18,6 +18,11 @@ import {
   formatDate,
   formatCurrency,
 } from '@middleware/domain/utils';
+import { Bank } from '@middleware/domain/entities/bank.entity';
+import { Movement } from '@middleware/domain/entities/movement.entity';
+import { Partner } from '@middleware/domain/entities/partners.entity';
+import { Customer } from '@middleware/domain/entities/customers.entity';
+import { Account } from '@middleware/domain/entities/account.entity';
 
 @Injectable()
 export class ReportsService {
@@ -27,39 +32,39 @@ export class ReportsService {
   private VALID_MOVEMENTS_TYPES = [1, 2, 3];
   private MOVEMENT_TYPE = [
     {
-      id: '1',
+      id: 1,
       name: 'SPEI SALIDA',
-      type: '1',
+      type: 1,
     },
     {
-      id: '2',
+      id: 2,
       name: 'SPEI ENTRADA',
-      type: '1',
+      type: 1,
     },
     {
-      id: '3',
+      id: 3,
       name: 'Traspaso',
-      type: '1',
+      type: 1,
     },
     {
-      id: '4',
+      id: 4,
       name: 'Compra',
-      type: '2',
+      type: 2,
     },
     {
-      id: '5',
+      id: 5,
       name: 'Retiro',
-      type: '2',
+      type: 2,
     },
     {
-      id: '6',
+      id: 6,
       name: 'Comisión por consulta de saldo',
-      type: '1',
+      type: 1,
     },
     {
-      id: '7',
+      id: 7,
       name: 'Comisión por operación',
-      type: '1',
+      type: 1,
     },
   ];
   constructor(private readonly configService: ConfigService) {
@@ -68,9 +73,9 @@ export class ReportsService {
 
   async generateMonthlyBalanceReport(
     appName: string,
-    banks: any[],
-    movements: any[],
-    userData: any,
+    banks: Bank[],
+    movements: Movement[],
+    userData: Customer | Partner,
     accountId: string,
     clabe: string,
     firstDay: string,
@@ -82,7 +87,34 @@ export class ReportsService {
         `${appName.toUpperCase()} is not ready to create monthly reports`,
       );
 
-    const reportData: Record<string, any> = {
+    const reportData: {
+      previousBalance: number;
+      currentBalance: string;
+      depositsCount: number;
+      withdrawsCount: number;
+      depositsAmount: string;
+      withdrawsAmount: string;
+      startDate: string;
+      endDate: string;
+      totalDays: string;
+      companyName: string;
+      taxId: string;
+      movements: Array<
+        Movement & {
+          movementType: string;
+          needData: boolean;
+          date: string;
+          deposit: string;
+          withdraw: string;
+          balance: string;
+          traking: string;
+          movement_bank: string;
+          movement_account: string;
+          time: string;
+          personLabel: string;
+        }
+      >;
+    } = {
       previousBalance: 0,
       currentBalance: '',
       depositsCount: 0,
@@ -98,11 +130,11 @@ export class ReportsService {
     };
 
     let depositsAmount = 0,
-      withdrawsAmount = 0;
+      withdrawsAmount = 0,
+      balance = 0;
     movements.forEach((movement) => {
       let deposit = 0,
-        withdraw = 0,
-        balance = 0;
+        withdraw = 0;
       const { amount, application_date, operation_date } = movement;
       if (amount > 0) {
         deposit = amount;
@@ -116,6 +148,7 @@ export class ReportsService {
       const movDate = operation_date || application_date;
       const date = new Date(movDate?.replace?.(/[zZ]/, ''));
       const personLabel = amount > 0 ? 'ORDENANTE' : 'BENEFICIARIO';
+      balance += amount;
       const movement_account =
         amount > 0 ? movement.payer_account : movement.beneficiary_account;
       reportData.movements.push({
@@ -203,9 +236,9 @@ export class ReportsService {
 
   async generateMovementsReport(
     appName: string,
-    banks: any[],
-    movements: any[],
-    userData: any,
+    banks: Bank[],
+    movements: Movement[],
+    userData: (Customer | Partner) & { account: Account },
     accountId: string,
   ) {
     const appConfiguration = APPS.get(appName);
@@ -321,7 +354,7 @@ R. Social: ${userData.company_name || userData.contact_name || ''}`;
     return buffer;
   }
 
-  async generateAccountsFile(accounts, appName) {
+  async generateAccountsFile(accounts, appName: string) {
     const appConfiguration = APPS.get(appName);
     if (!appConfiguration)
       throw new UnprocessableEntityException(
@@ -426,9 +459,9 @@ R. Social: ${userData.company_name || userData.contact_name || ''}`;
 
   async generateBoucher(
     appName: string,
-    banks: any[],
-    movement: any,
-    userData: any,
+    banks: Bank[],
+    movement: Movement,
+    userData: Customer | Partner,
     accountId: string,
   ) {
     if (!movement) throw new UnprocessableEntityException(`Movement not found`);

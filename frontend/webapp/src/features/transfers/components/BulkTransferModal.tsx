@@ -6,9 +6,10 @@ import { Button } from '@/shared/components/Button'
 import { DataTable, type DataTableColumn } from '@/shared/components/DataTable'
 import { Modal } from '@/shared/components/Modal'
 import type { AccountInfo } from '@/shared/types/accounts'
-import type { BulkTransferPreviewRow } from '@/shared/types/transfers'
+import type { BulkSpeiPreviewRow } from '@/shared/types/transfers'
 import { getAccountClabe, getSpeiAccountId } from '@/shared/utils/transferAccount'
 import { formatCurrency } from '@/shared/utils/format'
+import { speiService } from '@/api/services/speiService'
 
 const TEMPLATE_URL =
   'https://cdn.ebanking-service.net/speiout_template.xlsx'
@@ -33,7 +34,7 @@ const templateSpecs = [
   { name: 'Referencia', dataType: 'Numérico', example: '2025004' },
 ]
 
-const previewColumns: DataTableColumn<BulkTransferPreviewRow>[] = [
+const previewColumns: DataTableColumn<BulkSpeiPreviewRow>[] = [
   { id: 'line', header: 'Línea', cell: (row) => row.line },
   {
     id: 'account',
@@ -84,7 +85,7 @@ export function BulkTransferModal({
 }: BulkTransferModalProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
-  const [previewRows, setPreviewRows] = useState<BulkTransferPreviewRow[] | null>(
+  const [previewRows, setPreviewRows] = useState<BulkSpeiPreviewRow[] | null>(
     null,
   )
   const [previewLoading, setPreviewLoading] = useState(false)
@@ -117,8 +118,10 @@ export function BulkTransferModal({
     if (!next) return
 
     setPreviewLoading(true)
+    const formData = new FormData()
+    formData.append('template', next)
     try {
-      const rows = await transfersService.previewBulkTransfer(next)
+      const rows = await speiService.previewBulkSpei(formData)
       setPreviewRows(rows)
     } catch {
       setAlert({
@@ -137,14 +140,13 @@ export function BulkTransferModal({
 
     const payerClabe = getAccountClabe(sourceAccount)
     const accountId = getSpeiAccountId(sourceAccount)
-
     const formData = new FormData()
     formData.append('template', file)
     formData.append('payerAccount', payerClabe)
     formData.append('account_id', accountId)
 
     setSubmitLoading(true)
-    const result = await transfersService.sendTransferMassive(formData, otp)
+    const result = await speiService.sendSpeiMassive(formData, otp)
     setSubmitLoading(false)
 
     const detail = result.data as

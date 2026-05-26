@@ -14,6 +14,7 @@ import {
   MovementDetail,
 } from '@middleware/domain/entities/movement.entity';
 import { HeadersInfo } from '@middleware/domain/repositories/headers.interface';
+import { Bank } from '@middleware/domain/entities/bank.entity';
 
 @Injectable()
 export class MovementService {
@@ -90,7 +91,12 @@ export class MovementService {
       headers,
     )) as { data: MovementDetail[] };
     const { data: details = [] } = responseMovementInfo;
-    return details;
+    const movement = await this.movementRepository.findOne({
+      external_id: movementId,
+      app: headers['APP_NAME'],
+    });
+
+    return { ...movement, details };
   }
 
   async fetchAccountMovements(
@@ -142,7 +148,10 @@ export class MovementService {
         return this.syncMovement(movement, headers);
       }),
     );
-    return this.movementRepository.find(filter, pagination);
+    return this.movementRepository.find(
+      { ...filter, account_id: accountId },
+      pagination,
+    );
   }
 
   async fetchAccountMovementsFiltered(
@@ -249,7 +258,7 @@ export class MovementService {
 
   async saveMovementsSpeiTemplate(
     { appUrl, apiKey, userToken }: HeadersInfo,
-    file,
+    file: Express.Multer.File,
     data: { payerAccount: string; account_id?: string },
     otp: string,
     headers: Record<string, string>,
@@ -272,7 +281,7 @@ export class MovementService {
       msg: 'Sending SPEI bulk template',
       data: {
         payerAccount: clabe ?? data?.payerAccount,
-        filename: file.originalname as string,
+        filename: file.originalname,
       },
       clabe,
     });
@@ -286,6 +295,21 @@ export class MovementService {
       headers,
     );
     return responseMovementInfo;
+  }
+
+  async getSavedSpei(
+    { appUrl, apiKey, userToken }: HeadersInfo,
+    status: number,
+    headers: Record<string, string>,
+  ) {
+    const response = await this.kubitRequest.getRequest(
+      appUrl,
+      `/spei/orders/saved?status=${status}`,
+      apiKey,
+      userToken,
+      headers,
+    );
+    return response;
   }
 
   async processSavedSpei(
@@ -325,13 +349,17 @@ export class MovementService {
     { appUrl, apiKey, userToken }: HeadersInfo,
     headers: Record<string, string>,
   ) {
-    const response = await this.kubitRequest.getRequest(
+    const response = (await this.kubitRequest.getRequest(
       appUrl,
       `/spei/banks`,
       apiKey,
       userToken,
       headers,
-    );
+    )) as {
+      code: number;
+      status: string;
+      data: Array<Bank>;
+    };
     return response;
   }
 
@@ -360,7 +388,7 @@ export class MovementService {
   ) {
     const response = await this.kubitRequest.getRequest(
       appUrl,
-      `/spei/orders/saved?status=${status}`,
+      `/transfers/saved?status=${status}`,
       apiKey,
       userToken,
       headers,
@@ -388,7 +416,7 @@ export class MovementService {
 
   async saveMovementsTransferTemplate(
     { appUrl, apiKey, userToken }: HeadersInfo,
-    file,
+    file: Express.Multer.File,
     data: { payerAccount: string },
     otp: string,
     headers: any,

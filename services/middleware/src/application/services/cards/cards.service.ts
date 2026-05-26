@@ -30,7 +30,11 @@ export class CardsService {
     });
     const { id, ...cardData } = card;
     if (!dbCard) {
-      return this.cardRepository.save({ ...cardData, external_id: id });
+      return this.cardRepository.save({
+        ...cardData,
+        external_id: id,
+        app: headers['APP_NAME'],
+      });
     }
     await this.cardRepository.update(dbCard.id as string, {
       ...cardData,
@@ -165,5 +169,73 @@ export class CardsService {
     const { data: card } = response;
     if (!card) return null;
     return card;
+  }
+
+  async createVirtualCard(
+    info: HeadersInfo,
+    accountId: string,
+    headers: Record<string, string>,
+  ) {
+    const { appUrl, apiKey, userToken } = info;
+    const response = (await this.kubitRequest.postRequest(
+      appUrl,
+      `/cards`,
+      apiKey,
+      userToken,
+      { account_id: accountId, type: 'VIRTUAL' },
+      null,
+      headers,
+    )) as { data: { card_id: string } };
+    const cardId = response?.data?.card_id;
+    await this.changeCardStatus(
+      info,
+      { card_id: cardId, status: 'NORMAL' },
+      headers,
+    );
+    return { code: 200 };
+  }
+
+  async linkCardOnAccount(
+    info: HeadersInfo,
+    accountId: string,
+    cardId: string,
+    headers: any,
+  ) {
+    const { appUrl, apiKey, userToken } = info;
+    const response = (await this.kubitRequest.postRequest(
+      appUrl,
+      `/cards/assign`,
+      apiKey,
+      userToken,
+      {
+        card_id: cardId,
+        account_id: accountId,
+      },
+      null,
+      headers,
+    )) as { data: { card_id: string } };
+    const newCardId = response?.data?.card_id;
+    await this.changeCardStatus(
+      info,
+      { card_id: newCardId, status: 'NORMAL' },
+      headers,
+    );
+    return { code: 200 };
+  }
+
+  async changeCardStatus(
+    { appUrl, apiKey, userToken }: HeadersInfo,
+    body: { card_id: string; status: string; status_reason?: string | null },
+    headers: any,
+  ) {
+    await this.kubitRequest.putRequest(
+      appUrl,
+      `/cards/status`,
+      apiKey,
+      userToken,
+      body,
+      headers,
+    );
+    return { status: 'ok' };
   }
 }

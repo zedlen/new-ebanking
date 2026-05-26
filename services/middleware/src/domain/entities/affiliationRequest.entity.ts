@@ -17,4 +17,6 @@ export interface AffiliationRequest extends Entity {
   contact_tel: string;
   customer_type?: number;
   status: AffiliationStatus;
+  app: string;
+  active: boolean;
 }

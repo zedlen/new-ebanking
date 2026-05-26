@@ -259,17 +259,25 @@ export function TransferWizard({
     const wasPendingSave = pendingSave
     setLoading(false)
     setPendingSave(false)
+    setConfirmOpen(false)
 
-    if (result.code === 500) {
+    if (result.code !== 200) {
+      if(result.code === 403){
+        setAlert({
+          type: 'error',
+          title: 'Error en la operación',
+          message: 'El codigo OTP ingresado es incorrecto, rectificalo e intenta nuevamente.',
+        })
+      return
+      }
+      
       setAlert({
         type: 'error',
         title: 'Error en la operación',
-        message: getTransferErrorMessage(result.message),
+        message: getTransferErrorMessage(result?.message?.split(' ')?.[0] || ''),
       })
       return
     }
-
-    setConfirmOpen(false)
 
     if (wasPendingSave) {
       setSavedOpen(true)

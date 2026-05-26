@@ -109,10 +109,10 @@ export class Card {
   @Column({ type: 'jsonb', nullable: true })
   address?: Record<string, unknown> | null;
 
-  @Column()
+  @Column({ nullable: true })
   issuing_country!: string;
 
-  @Column()
+  @Column({ nullable: true })
   is_multiapp!: boolean;
 
   @Column({ type: 'jsonb', nullable: true })
@@ -121,10 +121,10 @@ export class Card {
   @Column({ type: 'jsonb', nullable: true })
   settings?: Record<string, unknown> | null;
 
-  @Column()
+  @Column({ nullable: true })
   creation_date!: string;
 
-  @Column()
+  @Column({ nullable: true })
   update_date!: string;
 
   @Column()

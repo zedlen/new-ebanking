@@ -3,6 +3,7 @@ import { URL_API } from '@/api/endpoints'
 import type {
   ApiResult,
   Bank,
+  BulkSpeiPreviewRow,
   SpeiTransferRequest,
 } from '@/shared/types/transfers'
 
@@ -60,4 +61,35 @@ export const speiService = {
       return mapError(error)
     }
   },
+
+  /** Mock preview until backend parse endpoint exists. */
+    async previewBulkSpei(formData: FormData): Promise<BulkSpeiPreviewRow[]> {
+      try {
+        const { data } = await apiClient.post(`${URL_API.SPEI.BULK}/preview`, formData, {
+          headers:{
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 60_000,
+        })
+        return data as BulkSpeiPreviewRow[]
+      } catch (error) {
+        return []
+      }
+    },
+  
+    async sendSpeiMassive(formData: FormData, otp: string): Promise<ApiResult> {      
+      try {
+        const { data } = await apiClient.post(URL_API.SPEI.BULK, formData, {
+          headers:{
+            ...otpHeaders(otp).headers,
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 60_000,
+        })
+        return mapResult(data as { code?: number; message?: string; data?: unknown })
+      } catch (error) {
+        return mapError(error)
+      }
+    },
+  
 }

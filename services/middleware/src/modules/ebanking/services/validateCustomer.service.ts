@@ -45,4 +45,19 @@ export class ValidateCustomer {
       throw new ForbiddenException('Customer is not assigned to user');
     return customer;
   }
+
+  async getCustomerByAffiliationCode(
+    affiliationCode: string,
+    info: HeadersInfo,
+  ) {
+    const customer = await this.customerService.findCustomerByAffiliationCode(
+      affiliationCode,
+      info,
+    );
+    if (customer) return customer;
+    return this.partnerService.findCustomerByAffiliationCode(
+      affiliationCode,
+      info,
+    );
+  }
 }

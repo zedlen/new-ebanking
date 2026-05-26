@@ -41,8 +41,7 @@ export const URL_API = {
   AFFILIATIONS: {
     LIST: `${apiV1}/ebanking/affiliations`,
     SYNC: `${apiV1}/ebanking/affiliations/sync`,
-    requests: (customerId: string) =>
-      `${apiV1}/ebanking/affiliations/${customerId}/requests`,
+    requests: `${apiV1}/ebanking/affiliations/requests`,
   },
   CLIENTS: `${apiV1}/ebanking/customers`,
   PARTNERS: `${apiV1}/ebanking/partners`,

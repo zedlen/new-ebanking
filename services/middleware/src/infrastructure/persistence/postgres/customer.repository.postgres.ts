@@ -10,9 +10,13 @@ import { Customer as CustomerSchema } from '@middleware/domain/schemas/customer.
 import { Partner as PartnerSchema } from '@middleware/domain/schemas/partner.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { Account } from '@middleware/domain/entities/account.entity';
 import { Card } from '@middleware/domain/entities/card.entity';
+import {
+  Account as AccountSchema,
+  Card as CardSchema,
+} from '@middleware/domain/schemas';
 
 @Injectable()
 export class CustomerPostgresRepository extends CustomerRepository {
@@ -78,12 +82,22 @@ export class CustomerPostgresRepository extends CustomerRepository {
   }
   async find(
     params: {
-      [key: string]: string | number | boolean;
+      [key: string]: string | number | boolean | null;
     },
     pagination: Pagination,
   ): Promise<{ total: number; data: Customer[] }> {
+    const paramsWhere = {};
+    for (const key in params) {
+      if (Array.isArray(params[key])) {
+        paramsWhere[key] = In(params[key]);
+      } else if (params[key] === null) {
+        paramsWhere[key] = IsNull();
+      } else {
+        paramsWhere[key] = params[key];
+      }
+    }
     const [data, total] = await this.customerModel.findAndCount({
-      where: params,
+      where: paramsWhere,
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -241,13 +255,59 @@ export class CustomerPostgresRepository extends CustomerRepository {
     );
     return results;
   }
-  getCustomerAffiliations(
+
+  async getCustomerAffiliations(
     filters: { [key: string]: string },
     pagination: Pagination,
     query?: string,
   ): Promise<
     PaginatedResult<Customer & { accounts: Array<Account & { cards: Card[] }> }>
   > {
-    return Promise.resolve({ total: 0, data: [] });
+    const q = this.customerModel
+      .createQueryBuilder('customer')
+      .leftJoinAndMapOne(
+        'customer.accounts',
+        AccountSchema,
+        'account',
+        'account.customer_id = customer.external_id',
+      )
+      .leftJoinAndMapMany(
+        'account.cards',
+        CardSchema,
+        'card',
+        'card.account_id = account.external_id',
+      )
+      .where(filters)
+      .skip(pagination.offset)
+      .take(pagination.limit);
+
+    if (query) {
+      q.andWhere(
+        '(customer.name ILIKE :query OR customer.company_name ILIKE :query OR customer.contact_email ILIKE :query)',
+        { query: `%${query}%` },
+      );
+    }
+
+    const [data, total] = await q.getManyAndCount();
+    return {
+      data: data as Array<
+        Customer & { accounts: Array<Account & { cards: Card[] }> }
+      >,
+      total,
+    };
+  }
+
+  findByAffiliationCode(
+    affiliationCode: string,
+    app: string,
+  ): Promise<Customer | null> {
+    return this.customerModel
+      .createQueryBuilder('customer')
+      .where(
+        'customer.affiliation_code = :affiliationCode OR customer.external_id = :affiliationCode',
+        { affiliationCode },
+      )
+      .andWhere('partner.app = :app', { app })
+      .getOne();
   }
 }

@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { AccountService } from '@middleware/application/services/accounts/accounts.service';
@@ -27,61 +27,75 @@ export class SyncAccountsQueue extends WorkerHost {
     }>,
   ) {
     const { headers, headersInfo, customerExternalId } = job.data;
-    const { appUrl, apiKey, userToken, appName } = headersInfo;
+    const { appName } = headersInfo;
     this.logger.log(
       `Starting sync-accounts job for parentId ${customerExternalId} in app ${appName}`,
     );
     let accounts: Array<Account> = [];
     try {
       const { data } = await this.accountsService.fetchUserAccounts(
-        { appUrl, apiKey, userToken } as HeadersInfo,
+        headersInfo,
         customerExternalId,
         { offset: 0, limit: 10 },
         headers,
       );
       accounts = data;
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Error syncing accounts for customer ${customerExternalId}: ${error.message}`,
+        `Error syncing accounts for customer ${customerExternalId}: ${errorMessage}`,
       );
     }
     try {
       await this.accountsService.fetchAccountFavorites(
-        { appUrl, apiKey, userToken } as HeadersInfo,
+        headersInfo,
         customerExternalId,
         headers,
       );
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Error syncing account favorites for customer ${customerExternalId}: ${error.message}`,
+        `Error syncing account favorites for customer ${customerExternalId}: ${errorMessage}`,
       );
     }
     for (const account of accounts) {
       try {
         await this.cardService.fetchAccountCards(
-          { appUrl, apiKey, userToken } as HeadersInfo,
+          headersInfo,
           account.external_id,
           headers,
         );
-      } catch (error) {
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Error syncing cards for account ${account.external_id}/${account.id}: ${error.message}`,
+          `Error syncing cards for account ${account.external_id}/${account.id}: ${errorMessage}`,
         );
       }
       try {
         await this.movementService.fetchAccountMovements(
-          { appUrl, apiKey, userToken } as HeadersInfo,
+          headersInfo,
           account.external_id,
           headers,
         );
-      } catch (error) {
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Error syncing movements for account ${account.external_id}/${account.id}: ${error.message}`,
+          `Error syncing movements for account ${account.external_id}/${account.id}: ${errorMessage}`,
         );
       }
     }
     this.logger.log(
       `Completed sync-accounts job for customer ${customerExternalId} in app ${appName}`,
     );
+  }
+
+  @OnWorkerEvent('failed')
+  onJobFailed(job: Job, error: Error) {
+    console.error(`Job ${job.id} failed with error: ${error.message}`);
+    // Perform external logging (e.g., Sentry) or notifications
   }
 }

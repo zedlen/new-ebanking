@@ -47,10 +47,10 @@ export const affiliationsService = {
     }
   },
 
-  async getRequests(customerId: string): Promise<AffiliationRequest[]> {
+  async getRequests(): Promise<AffiliationRequest[]> {
     try {
       const { data } = await apiClient.get<{ data?: AffiliationRequest[] }>(
-        URL_API.AFFILIATIONS.requests(customerId),
+        URL_API.AFFILIATIONS.requests,
       )
       return data.data ?? []
     } catch {
@@ -59,12 +59,11 @@ export const affiliationsService = {
   },
 
   async approveRequest(
-    customerId: string,
     requestId: string,
   ): Promise<{ id?: string; message?: string }> {
     try {
       const { data } = await apiClient.post<{ id?: string; message?: string }>(
-        `${URL_API.AFFILIATIONS.requests(customerId)}/${requestId}/approve`,
+        `${URL_API.AFFILIATIONS.requests}/${requestId}/approve`,
         {},
       )
       return data
@@ -78,10 +77,10 @@ export const affiliationsService = {
     }
   },
 
-  async rejectRequest(customerId: string, requestId: string): Promise<boolean> {
+  async rejectRequest( requestId: string): Promise<boolean> {
     try {
       const { data } = await apiClient.post<{ code?: number }>(
-        `${URL_API.AFFILIATIONS.requests(customerId)}/${requestId}/reject`,
+        `${URL_API.AFFILIATIONS.requests}/${requestId}/reject`,
         {},
       )
       return data.code === 201 || data.code === 200
@@ -91,13 +90,12 @@ export const affiliationsService = {
   },
 
   async updateRequest(
-    customerId: string,
     requestId: string,
     body: AffiliationRequestUpdate,
   ): Promise<{ code?: number; message?: string }> {
     try {
       const { data } = await apiClient.patch<{ code?: number; message?: string }>(
-        `${URL_API.AFFILIATIONS.requests(customerId)}/${requestId}`,
+        `${URL_API.AFFILIATIONS.requests}/${requestId}`,
         body,
       )
       return { code: data.code ?? 200, message: data.message }

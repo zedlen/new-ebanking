@@ -36,7 +36,8 @@ data "aws_iam_policy_document" "secrets_access" {
   statement {
     actions = ["secretsmanager:GetSecretValue"]
     resources = [
-      "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${local.secrets_prefix}"
+      # Secret ARNs include a random suffix; also allow child secrets under the prefix.
+      "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${local.secrets_prefix}*"
     ]
   }
 }

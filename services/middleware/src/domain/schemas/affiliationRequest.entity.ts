@@ -44,4 +44,10 @@ export class AffiliationRequest {
 
   @Column()
   status!: 'pending' | 'approved' | 'rejected';
+
+  @Column()
+  app!: string;
+
+  @Column()
+  active!: boolean;
 }

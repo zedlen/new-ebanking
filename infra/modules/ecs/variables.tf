@@ -76,3 +76,15 @@ variable "use_public_subnets" {
 variable "redis_uri" {
   type = string
 }
+
+variable "pgdb_uri" {
+  type = string
+}
+
+variable "redis_uri_secret_arn" {
+  type = string
+}
+
+variable "pgdb_uri_secret_arn" {
+  type = string
+}
