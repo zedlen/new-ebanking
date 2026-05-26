@@ -103,46 +103,12 @@ resource "aws_ecs_task_definition" "app" {
           "valueFrom" : var.pgdb_uri_secret_arn
         },
         {
-          "name" : "USER_FOR_SYNC_LIVINGROCK",
-        "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:USER_FOR_SYNC::" },
-        {
-          "name" : "PASS_FOR_SYNC_LIVINGROCK",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:PASS_FOR_SYNC::"
-        },
-        {
-          "name" : "URL_FOR_SYNC_LIVINGROCK",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:URL_FOR_SYNC::"
-        },
-        {
-          "name" : "KEY_FOR_SYNC_LIVINGROCK",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:KEY_FOR_SYNC::"
-        },
-        {
-          "name" : "USER_FOR_SYNC_XECORA",
-        "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:USER_FOR_SYNC_XECORA::" },
-        {
-          "name" : "PASS_FOR_SYNC_XECORA",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:PASS_FOR_SYNC_XECORA::"
-        },
-        {
-          "name" : "URL_FOR_SYNC_XECORA",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:URL_FOR_SYNC_XECORA::"
-        },
-        {
-          "name" : "KEY_FOR_SYNC_XECORA",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:KEY_FOR_SYNC_XECORA::"
-        },
-        {
           "name" : "API_LAYER_KEY",
           "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:API_LAYER_KEY::"
         },
         {
           "name" : "SENTRY_DNS",
           "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:SENTRY_DNS::"
-        },
-        {
-          "name" : "RESEND_API_TOKEN_LIVINGROCK",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:RESEND_API_TOKEN_LIVINGROCK::"
         },
         {
           "name" : "RESEND_API_TOKEN_MIDDLEWARE",
@@ -159,38 +125,6 @@ resource "aws_ecs_task_definition" "app" {
         {
           "name" : "CLERK_PUBLISHABLE_KEY",
           "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:CLERK_PUBLISHABLE_KEY::"
-        },
-        {
-          "name" : "DB_URI",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:DB_URI::"
-        },
-        {
-          "name" : "AZURE_TENANT_ID",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:AZURE_TENANT_ID::"
-        },
-        {
-          "name" : "AZURE_CLIENT_ID",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:AZURE_CLIENT_ID::"
-        },
-        {
-          "name" : "AZURE_CLIENT_SECRET",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:AZURE_CLIENT_SECRET::"
-        },
-        {
-          "name" : "SHAREPOINT_SITE_ID",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:SHAREPOINT_SITE_ID::"
-        },
-        {
-          "name" : "SHAREPOINT_DRIVE_ID",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:SHAREPOINT_DRIVE_ID::"
-        },
-        {
-          "name" : "SHAREPOINT_FOLDER_PATH",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:SHAREPOINT_FOLDER_PATH::"
-        },
-        {
-          "name" : "ONBOARDING_API_KEY",
-          "valueFrom" : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:${var.secrets_prefix}:ONBOARDING_API_KEY::"
         },
         {
           "name" : "DIDIT_WORKFLOW_ID",
